@@ -1175,12 +1175,48 @@ public class v21readXML_image {
 
 			//factura.imp_factura(_file_xml, Cabecera, Detalle);
 			Cabecera.set_mensaje_html(readFile(_file_html));
+			
+			
+			// RUC | TIPO DE DOCUMENTO | SERIE | NUMERO | MTO TOTAL IGV |
+			// MTO TOTAL DEL COMPROBANTE | FECHA DE EMISION | TIPO DE
+			// DOCUMENTO ADQUIRENTE | NUMERO DE DOCUMENTO ADQUIRENTE|
+			
+			String _qr_Data="";
+			String _Sep="|";
+			String _tipo_doc_receptor="6";
+			
+			if (Cabecera.get_ruc_receptor().length()<11) {
+				_tipo_doc_receptor="1";
+			}
+			
+			if (Cabecera.get_ruc_receptor().length()>11) {
+				_tipo_doc_receptor="4";
+			}
+			
+			
+
+			
+			_qr_Data=_Sep+Cabecera.get_ruc_emisor()+_Sep+
+					Cabecera.get_tipo_doc()+_Sep+
+					Cabecera.get_serie()+_Sep+
+					Cabecera.get_folio()+_Sep+
+					Formato.dinero_simple(Cabecera.get_total_igv()).trim()+_Sep+
+					Formato.dinero_simple(Cabecera.get_total()).trim()+_Sep+
+					Cabecera.get_fecha()+_Sep+
+					_tipo_doc_receptor+_Sep+
+					Cabecera.get_ruc_receptor()+_Sep;
+			
+					
+						
+					Cabecera.set_sello(_qr_Data);
+			
+					
 
 			//_lineas_Descripcion
 
-			// printPDFmc.imp_factura(_file_xml, Cabecera, Detalle, _lineas_de_la_factura,_file_pdf);
-			v21printPDF.imp_factura(_file_xml, Cabecera, Detalle, _lineas_Descripcion,_file_pdf, _file_jpg, Rel);
-		//	v21printPDFmc.imp_factura(_file_xml, Cabecera, Detalle, _lineas_Descripcion,_file_pdf);
+//			v21printPDF.imp_factura(_file_xml, Cabecera, Detalle, _lineas_Descripcion,_file_pdf, _file_jpg, Rel);
+		
+			
 
 			if (misParametros.get_tipo_impresora().equals("ticketera")) {
 		//		_printTicketeraMiniPos.imp_factura(_file_xml, Cabecera, Detalle, _lineas_Descripcion,_file_pdf_termica, misParametros.get_direccion_impresora(),misParametros.get_ruta_tickets() );			

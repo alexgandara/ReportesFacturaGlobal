@@ -5,7 +5,8 @@
 	<classpathentry kind="lib" path="C:/java_libs/commons-ssl.jar"/>
 	<classpathentry kind="lib" path="C:/java_libs/itextpdf-5.5.9.jar"/>
 	<classpathentry kind="lib" path="C:/java_libs/javax.mail-1.5.6.jar"/>
-	<classpathentry kind="lib" path="C:/java_libs/sun.misc.base64decoder.jar"/>
+	<classpathentry kind="lib" path="C:/java_libs/sun.misc.BASE64Decoder.jar"/>
 	<classpathentry kind="lib" path="C:/java_libs/zxing.jar"/>
+	<classpathentry kind="lib" path="C:/java_libs/guava-28.2-jre.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

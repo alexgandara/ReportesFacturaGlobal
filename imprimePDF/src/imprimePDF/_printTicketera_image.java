@@ -150,7 +150,7 @@ public class _printTicketera_image {
 				"SON: "+Cabecera.get_total_letra()+" Soles.",
 				"HASH;"+Cabecera.get_codigo_hash(),
 				"Emisor Electronico mediante Resolucion de       Intendencia No 155-2017/SUNAT. \n"+"",
-				"");
+				Cabecera.get_sello());
 
 
 

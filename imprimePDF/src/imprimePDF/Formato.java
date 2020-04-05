@@ -19,6 +19,18 @@ public class Formato {
         // El resultado sería el siguiente: 94.751.890,37
     }
     
+    public static String dinero_simple(double _numero) {
+        String _regreso;
+    	simb = new DecimalFormatSymbols();
+        simb.setDecimalSeparator('.');
+        simb.setGroupingSeparator(',');
+        df = new DecimalFormat("#####0.00", simb);
+        _regreso=padLeft(df.format(_numero),10);
+        return _regreso;
+        
+        // El resultado sería el siguiente: 94.751.890,37
+    }
+    
     public static String dinero_corto(double _numero) {
         String _regreso;
         
