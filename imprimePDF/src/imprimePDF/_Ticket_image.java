@@ -230,7 +230,21 @@ public class _Ticket_image {
     this.contentTicket = this.contentTicket.replace("{{_hash}}", _hash);
     this.contentTicket = this.contentTicket.replace("{{_leyenda}}", _leyenda);
     
-    print(_hash);
+    
+	byte[] bytes;
+
+	// creamos el data con bytes donde ira el QR
+	byte[] bytes_qr = qrCode("datos para el qr");
+
+	// Aca convertimos el string(cuerpo del ticket) a bytes tal como
+	// lo maneja la impresora(mas bien ticketera :p)
+	bytes = this.contentTicket.getBytes();
+
+	_imprime_bytes(bytes);
+	_imprime_bytes(bytes_qr);
+
+    
+   // print(_hash);
     
 	// imprimir a Disco
 	
@@ -297,111 +311,61 @@ public class _Ticket_image {
 	    
 	    
 	    
-  public void print(String _qr_data) {
-	  
-	  
-    //Especificamos el tipo de dato a imprimir
-    //Tipo: bytes; Subtipo: autodetectado
- 
-	  DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
-    
-    //Aca obtenemos el servicio de impresion por defatul
-    //Si no quieres ver el dialogo de seleccionar impresora usa esto
-  //  PrintService defaultService = PrintServiceLookup.lookupDefaultPrintService();
-    
-	  
-	  
-	  
-	  
-	  
-    
-    //Con esto mostramos el dialogo para seleccionar impresora
-    //Si quieres ver el dialogo de seleccionar impresora usalo
-    //Solo mostrara las impresoras que soporte arreglo de bits
-    
-    PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
- 
-    PrintService printService[] = PrintServiceLookup.lookupPrintServices(flavor, pras);
-    PrintService defaultService = PrintServiceLookup.lookupDefaultPrintService();
-    
-   // esta linea se activa para preguntar la impresora 
-  // PrintService service = ServiceUI.printDialog(null, 700, 200, printService, defaultService, flavor, pras);
-    
-   // esta es la linea que se activa para mandar sin preguntar 
-    PrintService service = PrintServiceLookup.lookupDefaultPrintService();
-    
+//	public void print(String _qr_data) {
+
+		// Especificamos el tipo de dato a imprimir
+		// Tipo: bytes; Subtipo: autodetectado
+
+//		DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
+
+//		PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
+
+//		PrintService printService[] = PrintServiceLookup.lookupPrintServices(
+//				flavor, pras);
+//		PrintService defaultService = PrintServiceLookup
+//				.lookupDefaultPrintService();
+
+		// esta linea se activa para preguntar la impresora
+		// PrintService service = ServiceUI.printDialog(null, 700, 200,
+		// printService, defaultService, flavor, pras);
+
+		// esta es la linea que se activa para mandar sin preguntar
+//		PrintService service = PrintServiceLookup.lookupDefaultPrintService();
+
+//		System.out.println("Tu impresora por default es: " + service.getName());
+
+		// Creamos un arreglo de tipo byte para la primera parte de ticket que
+		// con letras
+//		byte[] bytes;
+
+		// creamos el data con bytes donde ira el QR
+//		byte[] bytes_qr = qrCode(_qr_data);
+
+		// Aca convertimos el string(cuerpo del ticket) a bytes tal como
+		// lo maneja la impresora(mas bien ticketera :p)
+//		bytes = this.contentTicket.getBytes();
+
+//		_imprime_bytes(bytes);
+//		_imprime_bytes(bytes_qr);
+
+//	}
   
-    System.out.println("Tu impresora por default es: " + service.getName());
+public void _imprime_bytes(byte[] _bytes) {
 
-    //Creamos un arreglo de tipo byte para la primera parte de ticket que con letras
-    byte[] bytes;
+	PrintService service = PrintServiceLookup.lookupDefaultPrintService();
+	// System.out.println("Tu impresora por default es: " +
+	// service.getName());
+	DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
+	Doc doc_qr = new SimpleDoc(_bytes, flavor, null);
+	DocPrintJob job_qr = service.createPrintJob();
 
-    // creamos el data con bytes donde ira el QR
-    byte[] bytes_qr = qrCode(_qr_data);
-    
-    //Aca convertimos el string(cuerpo del ticket) a bytes tal como
-    //lo maneja la impresora(mas bien ticketera :p)
-    bytes = this.contentTicket.getBytes();
+	try {
+		job_qr.print(doc_qr, null);
+	} catch (Exception er) {
+		JOptionPane.showMessageDialog(null,	"Error al imprimir: " + er.getMessage());
+	}
 
-    
-    _imprime_bytes(bytes);
-    _imprime_bytes(bytes_qr);
-    
-    //Creamos un documento a imprimir, a el se le appendeara
-    //el arreglo de bytes
-//    Doc doc = new SimpleDoc(bytes,flavor,null);
-          
-    //Creamos un trabajo de impresión
-//    DocPrintJob job = service.createPrintJob();
-
-    
-    //Imprimimos dentro de un try 
-//    try {
-      //El metodo print imprime
-//      job.print(doc, null);
-//    } catch (Exception er) {
-//      JOptionPane.showMessageDialog(null,"Error al imprimir: " + er.getMessage());
-//    }
-    
-
-
-    // creamos el documento para el QR
-//    Doc doc_qr = new SimpleDoc(bytes_qr,flavor,null);
-    
-    //Creamos un trabajo de impresión para el QR
-//    DocPrintJob job_qr = service.createPrintJob();
-    
-    //Imprimimos dentro de un try para QR
-//    try {
-      //El metodo print imprime
- //     job_qr.print(doc_qr, null);
- //   } catch (Exception er) {
- //     JOptionPane.showMessageDialog(null,"Error al imprimir: " + er.getMessage());
- //   }
-
-
-    
-  }
-
-  
-	public void _imprime_bytes(byte[] _bytes) {
-
-		PrintService service = PrintServiceLookup.lookupDefaultPrintService();
-		// System.out.println("Tu impresora por default es: " +
-		// service.getName());
-		DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
-		Doc doc_qr = new SimpleDoc(_bytes, flavor, null);
-		DocPrintJob job_qr = service.createPrintJob();
-
-		try {
-
-			job_qr.print(doc_qr, null);
-		} catch (Exception er) {
-			JOptionPane.showMessageDialog(null,
-					"Error al imprimir: " + er.getMessage());
-		}
-
-	}   
+}   
   
   public static byte[] qrCode(String content) {
       HashMap commands = new HashMap();
