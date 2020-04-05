@@ -24,10 +24,15 @@ package imprimePDF;
 
 import java.awt.*;
 import java.awt.print.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
+import java.util.HashMap;
 
 import javax.swing.JOptionPane;
 import javax.print.DocFlavor;
@@ -41,13 +46,15 @@ import javax.print.attribute.*;
 
 
 
+
+
 public class _Ticket_image {
 	 
-	
 	  
 	byte[] comecoTextoCondensado = {0x45, 0x0F};  
 	byte[] fimTextoCondensado = {0x12};  
 	char[] cortePapel = new char[]{0x1d, 'V', 1};
+	
 	
 	String corte = String.valueOf(cortePapel);
 	
@@ -146,12 +153,12 @@ public class _Ticket_image {
 	    "                                IGV: {{tax}}\n"+
 	    "                              TOTAL: {{total}}\n\n"+
 		"================================================"+"\n"+
-		"{{_hash}}\n\n"+
+		"{{_hash}}\n\n";
 		
-		"{{_leyenda}}\n\n\n\n\n\n\n\n\n"+
+//		"{{_leyenda}}\n\n\n\n\n\n\n\n\n"+
 		
 		
-		texto_bottom+"\n\n"+corte;
+	//	texto_bottom+"\n\n"+corte;
 	
 	 public String _cadena_ticket=contentTicket;
 	
@@ -212,7 +219,7 @@ public class _Ticket_image {
     this.contentTicket = this.contentTicket.replace("{{_hash}}", _hash);
     this.contentTicket = this.contentTicket.replace("{{_leyenda}}", _leyenda);
     
-    print();
+    print(_hash);
     
 	// imprimir a Disco
 	
@@ -279,7 +286,7 @@ public class _Ticket_image {
 	    
 	    
 	    
-  public void print() {
+  public void print(String _qr_data) {
 	  
 	  
     //Especificamos el tipo de dato a imprimir
@@ -318,21 +325,21 @@ public class _Ticket_image {
     //Creamos un arreglo de tipo byte
     byte[] bytes;
 
+    byte[] bytes_qr = qrCode(_qr_data);
+    
     //Aca convertimos el string(cuerpo del ticket) a bytes tal como
     //lo maneja la impresora(mas bien ticketera :p)
     bytes = this.contentTicket.getBytes();
 
+    
+    
     //Creamos un documento a imprimir, a el se le appendeara
     //el arreglo de bytes
     Doc doc = new SimpleDoc(bytes,flavor,null);
-      
+          
     //Creamos un trabajo de impresión
     DocPrintJob job = service.createPrintJob();
 
-    
-    
-    
-    
     
     //Imprimimos dentro de un try de a huevo
     try {
@@ -344,106 +351,95 @@ public class _Ticket_image {
       JOptionPane.showMessageDialog(null,"Error al imprimir: " + er.getMessage());
     }
     
+
     
+    Doc doc_qr = new SimpleDoc(bytes_qr,flavor,null);
+    
+    //Creamos un trabajo de impresión
+    DocPrintJob job_qr = service.createPrintJob();
+
+    
+    //Imprimimos dentro de un try de a huevo
     try {
-
-        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        InputStream is = classloader.getResourceAsStream("c:\\logo.png");
-
-        Doc doc2 = new SimpleDoc(is, flavor, null);
-
-        job.print(doc2, null);
-
-    } catch (Exception e) {
-        e.printStackTrace();
+      //El metodo print imprime
+      job_qr.print(doc_qr, null);
+      
+      
+    } catch (Exception er) {
+      JOptionPane.showMessageDialog(null,"Error al imprimir: " + er.getMessage());
     }
-    
+
+
     
   }
 
   
   
-  public void printImage() {
-
-
-	    // find the printService of name printerName
-	    DocFlavor flavor = DocFlavor.INPUT_STREAM.GIF;
-	    PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
-
-	    
-	    PrintService printService[] = PrintServiceLookup.lookupPrintServices(flavor, pras);
-	    PrintService defaultService = PrintServiceLookup.lookupDefaultPrintService();
-	    
-	
-	    DocPrintJob job = defaultService.createPrintJob();
-
-	    try {
-
-	        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-	        InputStream is = classloader.getResourceAsStream("logo.png");
-
-	        Doc doc = new SimpleDoc(is, flavor, null);
-
-	        job.print(doc, null);
-
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	    }
-	}
+   
   
-  
-  
-  
-  public void print_qr_code(String qrdata)
-  {
-      int store_len = qrdata.length() + 3;
-      byte store_pL = (byte) (store_len % 256);
-      byte store_pH = (byte) (store_len / 256);
-
+  public static byte[] qrCode(String content) {
+      HashMap commands = new HashMap();
+      String[] commandSequence = {"model", "size", "error", "store", "content", "print"};
+      int contentLen = content.length();
+      int resultLen = 0;
+      byte[] command;
 
       // QR Code: Select the model
       //              Hex     1D      28      6B      04      00      31      41      n1(x32)     n2(x00) - size of model
       // set n1 [49 x31, model 1] [50 x32, model 2] [51 x33, micro qr code]
       // https://reference.epson-biz.com/modules/ref_escpos/index.php?content_id=140
-      byte[] modelQR = {(byte)0x1d, (byte)0x28, (byte)0x6b, (byte)0x04, (byte)0x00, (byte)0x31, (byte)0x41, (byte)0x32, (byte)0x00};
+      command = new byte[]{(byte) 0x1d, (byte) 0x28, (byte) 0x6b, (byte) 0x04, (byte) 0x00, (byte) 0x31, (byte) 0x41, (byte) 0x32, (byte) 0x00};
+      commands.put("model", command);
+      resultLen += command.length;
 
       // QR Code: Set the size of module
       // Hex      1D      28      6B      03      00      31      43      n
       // n depends on the printer
       // https://reference.epson-biz.com/modules/ref_escpos/index.php?content_id=141
-      byte[] sizeQR = {(byte)0x1d, (byte)0x28, (byte)0x6b, (byte)0x03, (byte)0x00, (byte)0x31, (byte)0x43, (byte)0x03};
-
+      command = new byte[]{(byte) 0x1d, (byte) 0x28, (byte) 0x6b, (byte) 0x03, (byte) 0x00, (byte) 0x31, (byte) 0x43, (byte) 0x06};
+      commands.put("size", command);
+      resultLen += command.length;
 
       //          Hex     1D      28      6B      03      00      31      45      n
       // Set n for error correction [48 x30 -> 7%] [49 x31-> 15%] [50 x32 -> 25%] [51 x33 -> 30%]
       // https://reference.epson-biz.com/modules/ref_escpos/index.php?content_id=142
-      byte[] errorQR = {(byte)0x1d, (byte)0x28, (byte)0x6b, (byte)0x03, (byte)0x00, (byte)0x31, (byte)0x45, (byte)0x31};
-
+      command = new byte[]{(byte) 0x1d, (byte) 0x28, (byte) 0x6b, (byte) 0x03, (byte) 0x00, (byte) 0x31, (byte) 0x45, (byte) 0x33};
+      commands.put("error", command);
+      resultLen += command.length;
 
       // QR Code: Store the data in the symbol storage area
       // Hex      1D      28      6B      pL      pH      31      50      30      d1...dk
       // https://reference.epson-biz.com/modules/ref_escpos/index.php?content_id=143
       //                        1D          28          6B         pL          pH  cn(49->x31) fn(80->x50) m(48->x30) d1…dk
-      byte[] storeQR = {(byte)0x1d, (byte)0x28, (byte)0x6b, store_pL, store_pH, (byte)0x31, (byte)0x50, (byte)0x30};
+      int storeLen = contentLen + 3;
+      byte store_pL = (byte) (storeLen % 256);
+      byte store_pH = (byte) (storeLen / 256);
+      command = new byte[]{(byte) 0x1d, (byte) 0x28, (byte) 0x6b, store_pL, store_pH, (byte) 0x31, (byte) 0x50, (byte) 0x30};
+      commands.put("store", command);
+      resultLen += command.length;
 
+      // QR Code content
+      command = content.getBytes();
+      commands.put("content", command);
+      resultLen += command.length;
 
       // QR Code: Print the symbol data in the symbol storage area
       // Hex      1D      28      6B      03      00      31      51      m
       // https://reference.epson-biz.com/modules/ref_escpos/index.php?content_id=144
-      byte[] printQR = {(byte)0x1d, (byte)0x28, (byte)0x6b, (byte)0x03, (byte)0x00, (byte)0x31, (byte)0x51, (byte)0x30};
+      command = new byte[]{(byte) 0x1d, (byte) 0x28, (byte) 0x6b, (byte) 0x03, (byte) 0x00, (byte) 0x31, (byte) 0x51, (byte) 0x30};
+      commands.put("print", command);
+      resultLen += command.length;
 
-      // flush() runs the print job and clears out the print buffer
- //     flush();
+      int cnt = 0;
+      int commandLen = 0;
+      byte[] result = new byte[resultLen];
+      for (String currCommand : commandSequence) {
+          command = (byte[]) commands.get(currCommand);
+          commandLen = command.length;
+          System.arraycopy(command, 0, result, cnt, commandLen);
+          cnt += commandLen;
+      }
 
-      // write() simply appends the data to the buffer
-   //   write(modelQR);
-
-    //  write(sizeQR);
-   //   write(errorQR);
-   //   write(storeQR);
-   //   write(qrdata.getBytes());
-   //   write(printQR);
-   //   flush();
+      return result;
   }
-  
 }
