@@ -56,6 +56,17 @@ public class _Ticket_image {
 	char[] cortePapel = new char[]{0x1d, 'V', 1};
 	
 	
+	// variable para imprimir imagen
+	private final static char ESC_CHAR = 0x1B;
+	private final static char GS = 0x1D;
+	private final static byte[] LINE_FEED = new byte[]{0x0A};
+	private final static byte[] CUT_PAPER = new byte[]{GS, 0x56, 0x00};
+	private final static byte[] INIT_PRINTER = new byte[]{ESC_CHAR, 0x40};
+	private static byte[] SELECT_BIT_IMAGE_MODE = {0x1B, 0x2A, 33};
+	private final static byte[] SET_LINE_SPACE_24 = new byte[]{ESC_CHAR, 0x33, 24};
+	
+	
+	
 	String corte = String.valueOf(cortePapel);
 	
 
@@ -322,9 +333,10 @@ public class _Ticket_image {
   
     System.out.println("Tu impresora por default es: " + service.getName());
 
-    //Creamos un arreglo de tipo byte
+    //Creamos un arreglo de tipo byte para la primera parte de ticket que con letras
     byte[] bytes;
 
+    // creamos el data con bytes donde ira el QR
     byte[] bytes_qr = qrCode(_qr_data);
     
     //Aca convertimos el string(cuerpo del ticket) a bytes tal como
@@ -332,50 +344,64 @@ public class _Ticket_image {
     bytes = this.contentTicket.getBytes();
 
     
+    _imprime_bytes(bytes);
+    _imprime_bytes(bytes_qr);
     
     //Creamos un documento a imprimir, a el se le appendeara
     //el arreglo de bytes
-    Doc doc = new SimpleDoc(bytes,flavor,null);
+//    Doc doc = new SimpleDoc(bytes,flavor,null);
           
     //Creamos un trabajo de impresión
-    DocPrintJob job = service.createPrintJob();
+//    DocPrintJob job = service.createPrintJob();
 
     
-    //Imprimimos dentro de un try de a huevo
-    try {
+    //Imprimimos dentro de un try 
+//    try {
       //El metodo print imprime
-      job.print(doc, null);
-      
-      
-    } catch (Exception er) {
-      JOptionPane.showMessageDialog(null,"Error al imprimir: " + er.getMessage());
-    }
+//      job.print(doc, null);
+//    } catch (Exception er) {
+//      JOptionPane.showMessageDialog(null,"Error al imprimir: " + er.getMessage());
+//    }
     
 
-    
-    Doc doc_qr = new SimpleDoc(bytes_qr,flavor,null);
-    
-    //Creamos un trabajo de impresión
-    DocPrintJob job_qr = service.createPrintJob();
 
+    // creamos el documento para el QR
+//    Doc doc_qr = new SimpleDoc(bytes_qr,flavor,null);
     
-    //Imprimimos dentro de un try de a huevo
-    try {
+    //Creamos un trabajo de impresión para el QR
+//    DocPrintJob job_qr = service.createPrintJob();
+    
+    //Imprimimos dentro de un try para QR
+//    try {
       //El metodo print imprime
-      job_qr.print(doc_qr, null);
-      
-      
-    } catch (Exception er) {
-      JOptionPane.showMessageDialog(null,"Error al imprimir: " + er.getMessage());
-    }
+ //     job_qr.print(doc_qr, null);
+ //   } catch (Exception er) {
+ //     JOptionPane.showMessageDialog(null,"Error al imprimir: " + er.getMessage());
+ //   }
 
 
     
   }
 
   
-  
-   
+	public void _imprime_bytes(byte[] _bytes) {
+
+		PrintService service = PrintServiceLookup.lookupDefaultPrintService();
+		// System.out.println("Tu impresora por default es: " +
+		// service.getName());
+		DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
+		Doc doc_qr = new SimpleDoc(_bytes, flavor, null);
+		DocPrintJob job_qr = service.createPrintJob();
+
+		try {
+
+			job_qr.print(doc_qr, null);
+		} catch (Exception er) {
+			JOptionPane.showMessageDialog(null,
+					"Error al imprimir: " + er.getMessage());
+		}
+
+	}   
   
   public static byte[] qrCode(String content) {
       HashMap commands = new HashMap();
